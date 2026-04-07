@@ -19,6 +19,42 @@ A scalable URL shortener service built with Spring Boot, PostgreSQL, Redis, and 
 - **Build Tool**: Maven
 - **Containerization**: Docker
 
+## Screenshots
+
+### Swagger UI — API Overview
+All three REST endpoints exposed by the service: shorten, redirect, and analytics.
+
+![Swagger Overview](screenshots/swagger-overview.png)
+
+### Swagger UI — Shorten URL
+`POST /api/v1/data/shorten` returns a 7-character base62 short code with redirect type and creation timestamp.
+
+![Swagger Shorten](screenshots/swagger-shorten.png)
+
+### Swagger UI — Click Analytics
+`GET /api/v1/analytics/{shortUrl}` returns click count, original URL, and metadata for any shortened URL.
+
+![Swagger Analytics](screenshots/swagger-analytics.png)
+
+---
+
+### Grafana — Live Monitoring Dashboard
+Real-time metrics via Prometheus: request rate, p95 latency, 5xx error rate, JVM heap, CPU usage, HikariCP connection pool, and JVM threads — all auto-provisioned on startup.
+
+![Grafana Dashboard](screenshots/grafana-dashboard.png)
+
+---
+
+### Data Flow — URL Shortening
+Step-by-step visualization of the `POST /shorten` flow: HTTP client → Controller → DTO validation → Service layer → base62 encoding → PostgreSQL persistence.
+
+![Data Flow Shortening](screenshots/data-flow-shortening.png)
+
+### Data Flow — URL Redirection
+Step-by-step visualization of the `GET /{shortUrl}` flow: Browser → Controller → Service lookup → expiry check → click count increment → 301/302 redirect response.
+
+![Data Flow Redirection](screenshots/data-flow-redirection.png)
+
 ## Quick Start
 
 ### Prerequisites
@@ -164,42 +200,6 @@ The service follows a layered architecture:
 - **Entity Layer**: Domain models (`Url`, `RedirectType`)
 - **Scheduler**: Hourly expired URL cleanup (`ExpiredUrlCleanupTask`)
 - **Util**: Base62 encoding for short code generation (`Base62Encoder`)
-
-## Screenshots
-
-### Swagger UI — API Overview
-All three REST endpoints exposed by the service: shorten, redirect, and analytics.
-
-![Swagger Overview](screenshots/swagger-overview.png)
-
-### Swagger UI — Shorten URL
-`POST /api/v1/data/shorten` returns a 7-character base62 short code with redirect type and creation timestamp.
-
-![Swagger Shorten](screenshots/swagger-shorten.png)
-
-### Swagger UI — Click Analytics
-`GET /api/v1/analytics/{shortUrl}` returns click count, original URL, and metadata for any shortened URL.
-
-![Swagger Analytics](screenshots/swagger-analytics.png)
-
----
-
-### Grafana — Live Monitoring Dashboard
-Real-time metrics via Prometheus: request rate, p95 latency, 5xx error rate, JVM heap, CPU usage, HikariCP connection pool, and JVM threads — all auto-provisioned on startup.
-
-![Grafana Dashboard](screenshots/grafana-dashboard.png)
-
----
-
-### Data Flow — URL Shortening
-Step-by-step visualization of the `POST /shorten` flow: HTTP client → Controller → DTO validation → Service layer → base62 encoding → PostgreSQL persistence.
-
-![Data Flow Shortening](screenshots/data-flow-shortening.png)
-
-### Data Flow — URL Redirection
-Step-by-step visualization of the `GET /{shortUrl}` flow: Browser → Controller → Service lookup → expiry check → click count increment → 301/302 redirect response.
-
-![Data Flow Redirection](screenshots/data-flow-redirection.png)
 
 ## Development
 
