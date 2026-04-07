@@ -59,7 +59,7 @@ Content-Type: application/json
 
 {
   "longUrl": "https://www.example.com/very/long/url",
-  "expiresAt": "2024-12-31T23:59:59Z"  // optional
+  "expiresAt": "2027-12-31T23:59:59Z"  // optional
 }
 ```
 
@@ -158,10 +158,48 @@ Import the Postman collection for GUI-based API testing.
 ## Architecture
 
 The service follows a layered architecture:
-- **Controller Layer**: REST API endpoints
-- **Service Layer**: Business logic
-- **Repository Layer**: Data access
-- **Entity Layer**: Domain models
+- **Controller Layer**: REST API endpoints (`UrlController`)
+- **Service Layer**: Business logic with Redis caching (`UrlService`)
+- **Repository Layer**: JPA data access (`UrlRepository`)
+- **Entity Layer**: Domain models (`Url`, `RedirectType`)
+- **Scheduler**: Hourly expired URL cleanup (`ExpiredUrlCleanupTask`)
+- **Util**: Base62 encoding for short code generation (`Base62Encoder`)
+
+## Screenshots
+
+### Swagger UI — API Overview
+All three REST endpoints exposed by the service: shorten, redirect, and analytics.
+
+![Swagger Overview](screenshots/swagger-overview.png)
+
+### Swagger UI — Shorten URL
+`POST /api/v1/data/shorten` returns a 7-character base62 short code with redirect type and creation timestamp.
+
+![Swagger Shorten](screenshots/swagger-shorten.png)
+
+### Swagger UI — Click Analytics
+`GET /api/v1/analytics/{shortUrl}` returns click count, original URL, and metadata for any shortened URL.
+
+![Swagger Analytics](screenshots/swagger-analytics.png)
+
+---
+
+### Grafana — Live Monitoring Dashboard
+Real-time metrics via Prometheus: request rate, p95 latency, 5xx error rate, JVM heap, CPU usage, HikariCP connection pool, and JVM threads — all auto-provisioned on startup.
+
+![Grafana Dashboard](screenshots/grafana-dashboard.png)
+
+---
+
+### Data Flow — URL Shortening
+Step-by-step visualization of the `POST /shorten` flow: HTTP client → Controller → DTO validation → Service layer → base62 encoding → PostgreSQL persistence.
+
+![Data Flow Shortening](screenshots/data-flow-shortening.png)
+
+### Data Flow — URL Redirection
+Step-by-step visualization of the `GET /{shortUrl}` flow: Browser → Controller → Service lookup → expiry check → click count increment → 301/302 redirect response.
+
+![Data Flow Redirection](screenshots/data-flow-redirection.png)
 
 ## Development
 
@@ -195,7 +233,7 @@ The application uses structured JSON logging for better log analysis and monitor
 
 ### Log Example:
 ```json
-{"timestamp":"2026-01-13T00:45:59.921+05:30","level":"INFO","logger":"com.urlshortener.controller.UrlController","message":"URL shortened successfully","thread":"http-nio-8080-exec-1"}
+{"timestamp":"2026-04-07T10:30:00.000+05:30","level":"INFO","logger":"com.urlshortener.controller.UrlController","message":"URL shortened successfully","thread":"http-nio-8080-exec-1"}
 ```
 
 ### Viewing Logs:
@@ -227,7 +265,7 @@ docker-compose up --build
 Access monitoring tools:
 
 - **Prometheus UI**: `http://localhost:9090`
-- **Grafana UI**: `http://localhost:3000`
+- **Grafana UI**: `http://localhost:3001`
   - Username: `admin`
   - Password: `admin`
 
